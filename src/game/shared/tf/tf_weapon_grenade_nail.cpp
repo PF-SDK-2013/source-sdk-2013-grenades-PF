@@ -257,12 +257,10 @@ void CTFGrenadeNailProjectile::EmitNails( void )
 		QAngle angNail( random->RandomFloat( -3, 3 ), m_flNailAngle, 0 );
 
 
-		// Emit a nail — CTFProjectile_Nail is a real networked entity now (PF2C-accurate),
-		// not the dispatch-effect fake projectile this fork's CTFBaseProjectile::Create() makes.
-		// PF2C port: pOwner must be the PLAYER (GetThrower()) so that ProjectileTouch attributes
-		// the kill correctly via GetOwnerEntity(). Pass 'this' (the nail grenade) as pScorer so
-		// it's available for GetLauncher() attribution and team detection.
-		CTFProjectile_Nail* pNail = CTFProjectile_Nail::Create(GetAbsOrigin(), angNail, GetThrower(), this);
+		// pOwner = this (nail grenade) for team/physics context.
+		// pScorer = GetThrower() (the player) for kill credit — Create() uses pScorer
+		// as the entity's owner so ProjectileTouch correctly attributes kills to the player.
+		CTFProjectile_Nail* pNail = CTFProjectile_Nail::Create(GetAbsOrigin(), angNail, this, GetThrower());
 			if (pNail)
 		{
 			pNail->SetWeaponID(GetWeaponID());
