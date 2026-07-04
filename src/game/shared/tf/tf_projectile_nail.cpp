@@ -229,31 +229,33 @@ void CTFProjectile_Nail::Spawn( void )
 //-----------------------------------------------------------------------------
 CTFProjectile_Nail *CTFProjectile_Nail::Create( const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pOwner /*= NULL*/, CBaseEntity *pScorer /*= NULL*/, bool bCritical /*= false*/ )
 {
-	// Use CreateNoSpawn so we can configure the entity before DispatchSpawn fires Spawn().
-	// CBaseEntity::Create would call DispatchSpawn internally, then we'd call Spawn() again,
-	// resetting physics state (velocity, movetype) and producing invisible/frozen nails.
-	CTFProjectile_Nail *pNail = static_cast<CTFProjectile_Nail*>( CBaseEntity::CreateNoSpawn( "tf_projectile_nail", vecOrigin, vecAngles, NULL ) );
+	// Use CBaseEntity::Create (not CTFBaseProjectile::Create — that SDK function unconditionally
+	// adds EF_NODRAW and dispatches a clientside temp entity, which is wrong for nails).
+	// The double Spawn() pattern (Create already calls DispatchSpawn, then we call Spawn() again)
+	// is intentional — it matches the pattern that the user confirmed working.
+	CTFProjectile_Nail *pNail = static_cast<CTFProjectile_Nail*>( CBaseEntity::Create( "tf_projectile_nail", vecOrigin, vecAngles, pOwner ) );
 	if ( !pNail )
 		return NULL;
 
-	// pOwner = nail grenade projectile (for team/launcher context)
-	// pScorer = player (for kill credit via GetOwnerEntity → SetAttacker)
-	// ProjectileTouch uses GetOwnerEntity() for SetAttacker, so set it to the player.
-	CBaseEntity *pPlayer = pScorer ? pScorer : pOwner;
-	pNail->SetOwnerEntity( pPlayer );
+	// pOwner = nail grenade (for team context/physics)
+	// pScorer = the player who threw the grenade (for kill credit)
+	// ProjectileTouch calls SetAttacker(GetOwnerEntity()), so override with the player.
+	pNail->SetOwnerEntity( pOwner );
+	if ( pScorer )
+		pNail->SetOwnerEntity( pScorer );	// player wins for kill credit attribution
 	pNail->SetScorer( pScorer );
+
+	pNail->Spawn();
+
+	Vector vecForward;
+	AngleVectors( vecAngles, &vecForward );
+	pNail->SetAbsVelocity( vecForward * CTFProjectile_Nail::GetInitialVelocity() );
 
 	if ( pOwner )
 		pNail->ChangeTeam( pOwner->GetTeamNumber() );
 
 	if ( bCritical )
 		pNail->SetCritical( true );
-
-	DispatchSpawn( pNail );
-
-	Vector vecForward;
-	AngleVectors( vecAngles, &vecForward );
-	pNail->SetAbsVelocity( vecForward * CTFProjectile_Nail::GetInitialVelocity() );
 
 	return pNail;
 }
