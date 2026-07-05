@@ -57,6 +57,7 @@ public:
 	static CTFProjectile_Nail *Create( const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pOwner = NULL, CBaseEntity *pScorer = NULL, bool bCritical = false );
 	virtual void Spawn( void );
 	virtual unsigned int PhysicsSolidMaskForEntity( void ) const { return BaseClass::PhysicsSolidMaskForEntity() | CONTENTS_REDTEAM | CONTENTS_BLUETEAM; }
+	virtual void ProjectileTouch( CBaseEntity *pOther );	// PF2C port: traces owner chain for kill credit
 #endif
 	virtual const char *GetProjectileModelName( void ) { return "models/weapons/w_models/w_nail.mdl"; }
 	virtual float GetGravity( void ) { return 0.001f; }

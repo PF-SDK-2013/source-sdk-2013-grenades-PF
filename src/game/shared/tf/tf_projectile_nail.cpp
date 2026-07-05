@@ -222,6 +222,34 @@ void CTFProjectile_Nail::Spawn( void )
 }
 
 //-----------------------------------------------------------------------------
+// Purpose: Override ProjectileTouch to fix kill credit.
+//          Our owner is the CTFGrenadeNailProjectile (needed so nails don't
+//          immediately collide with and get blocked by the grenade body they
+//          spawn inside). But CTFBaseProjectile::ProjectileTouch sets
+//          info.SetAttacker(GetOwnerEntity()), which would credit the grenade
+//          entity, not the player. At the moment of impact we swap the owner
+//          to the player for the base call, then restore it.
+//          PF2C port — kill credit fix.
+//-----------------------------------------------------------------------------
+void CTFProjectile_Nail::ProjectileTouch( CBaseEntity *pOther )
+{
+	CBaseEntity *pGrenade = GetOwnerEntity();
+	if ( pGrenade && !pGrenade->IsPlayer() )
+	{
+		// Follow the chain: nail → nail grenade → player
+		CBaseEntity *pThrower = pGrenade->GetOwnerEntity();
+		if ( pThrower && pThrower->IsPlayer() )
+		{
+			SetOwnerEntity( pThrower );
+			BaseClass::ProjectileTouch( pOther );
+			// Entity is being removed after touch — no need to restore.
+			return;
+		}
+	}
+	BaseClass::ProjectileTouch( pOther );
+}
+
+//-----------------------------------------------------------------------------
 // Purpose: Creates the nail entity directly — does NOT go through
 //          CTFBaseProjectile::Create(), which always hides the entity and
 //          dispatches a clientside fake instead. This entity is real and
@@ -229,22 +257,12 @@ void CTFProjectile_Nail::Spawn( void )
 //-----------------------------------------------------------------------------
 CTFProjectile_Nail *CTFProjectile_Nail::Create( const Vector &vecOrigin, const QAngle &vecAngles, CBaseEntity *pOwner /*= NULL*/, CBaseEntity *pScorer /*= NULL*/, bool bCritical /*= false*/ )
 {
-	// Use CBaseEntity::Create (not CTFBaseProjectile::Create — that SDK function unconditionally
-	// adds EF_NODRAW and dispatches a clientside temp entity, which is wrong for nails).
-	// The double Spawn() pattern (Create already calls DispatchSpawn, then we call Spawn() again)
-	// is intentional — it matches the pattern that the user confirmed working.
 	CTFProjectile_Nail *pNail = static_cast<CTFProjectile_Nail*>( CBaseEntity::Create( "tf_projectile_nail", vecOrigin, vecAngles, pOwner ) );
 	if ( !pNail )
 		return NULL;
 
-	// pOwner = nail grenade (for team context/physics)
-	// pScorer = the player who threw the grenade (for kill credit)
-	// ProjectileTouch calls SetAttacker(GetOwnerEntity()), so override with the player.
 	pNail->SetOwnerEntity( pOwner );
-	if ( pScorer )
-		pNail->SetOwnerEntity( pScorer );	// player wins for kill credit attribution
 	pNail->SetScorer( pScorer );
-
 	pNail->Spawn();
 
 	Vector vecForward;
@@ -252,12 +270,17 @@ CTFProjectile_Nail *CTFProjectile_Nail::Create( const Vector &vecOrigin, const Q
 	pNail->SetAbsVelocity( vecForward * CTFProjectile_Nail::GetInitialVelocity() );
 
 	if ( pOwner )
+	{
 		pNail->ChangeTeam( pOwner->GetTeamNumber() );
+	}
 
 	if ( bCritical )
+	{
 		pNail->SetCritical( true );
+	}
 
 	return pNail;
+}
 }
 
 #else // CLIENT_DLL
