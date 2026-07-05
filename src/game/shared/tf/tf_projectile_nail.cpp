@@ -281,7 +281,6 @@ CTFProjectile_Nail *CTFProjectile_Nail::Create( const Vector &vecOrigin, const Q
 
 	return pNail;
 }
-}
 
 #else // CLIENT_DLL
 
