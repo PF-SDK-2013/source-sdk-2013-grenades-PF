@@ -227,25 +227,33 @@ void CTFProjectile_Nail::Spawn( void )
 //          immediately collide with and get blocked by the grenade body they
 //          spawn inside). But CTFBaseProjectile::ProjectileTouch sets
 //          info.SetAttacker(GetOwnerEntity()), which would credit the grenade
-//          entity, not the player. At the moment of impact we swap the owner
-//          to the player for the base call, then restore it.
-//          PF2C port — kill credit fix.
+//          entity, not the player.
+//
+//          PF2C port — kill credit fix, v2:
+//          The previous fix walked the owner chain (nail -> grenade -> player)
+//          at touch time. That fails in practice: the nail grenade is
+//          UTIL_Remove()'d as soon as it finishes emitting its bursts, and the
+//          engine nulls out any entity's owner handle when that owner is
+//          destroyed. So by the time a nail actually hits something,
+//          GetOwnerEntity() on the nail is already NULL -- there is no chain
+//          left to walk, and it falls through to BaseClass::ProjectileTouch()
+//          with a NULL owner, which sets a NULL attacker (console logs it as
+//          a suicide, and friendly fire isn't blocked because there's no
+//          valid attacker team to compare against the victim's).
+//
+//          m_Scorer is a raw player handle set once in Create() and remains
+//          valid for the whole match regardless of what happens to the
+//          grenade, so use that instead (same pattern tf_projectile_arrow.cpp
+//          uses for the same base-class limitation).
 //-----------------------------------------------------------------------------
 void CTFProjectile_Nail::ProjectileTouch( CBaseEntity *pOther )
 {
-	CBaseEntity *pGrenade = GetOwnerEntity();
-	if ( pGrenade && !pGrenade->IsPlayer() )
+	CBasePlayer *pScorer = GetScorer();
+	if ( pScorer )
 	{
-		// Follow the chain: nail → nail grenade → player
-		CBaseEntity *pThrower = pGrenade->GetOwnerEntity();
-		if ( pThrower && pThrower->IsPlayer() )
-		{
-			SetOwnerEntity( pThrower );
-			BaseClass::ProjectileTouch( pOther );
-			// Entity is being removed after touch — no need to restore.
-			return;
-		}
+		SetOwnerEntity( pScorer );
 	}
+
 	BaseClass::ProjectileTouch( pOther );
 }
 
