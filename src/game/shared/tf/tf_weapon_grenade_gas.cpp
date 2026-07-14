@@ -18,6 +18,7 @@
 #include "soundent.h"
 #include "KeyValues.h"
 #include "trigger_area_capture.h"
+#include "physics_shared.h"		// PF2C port: for physprops / SetMaterialIndex
 #endif
 
 #define GRENADE_GAS_TIMER	3.0f //Seconds
@@ -110,6 +111,24 @@ void CTFGrenadeGasProjectile::Spawn()
 	BaseClass::Spawn();
 
 	m_hGasEffect = NULL;
+
+	// PF2C port: the compiled model's own baked-in surface property is "default",
+	// which pulls its friction value from the base SDK's stock surfaceproperties.txt
+	// -- content that lives outside this mod and outside PF2C's own asset set, so we
+	// have no guarantee it's tuned the same way PF2C's environment was. Explicitly
+	// assign the "grenade_gas" property (see scripts/surfaceproperties_tf.txt) so
+	// friction/bounce behavior comes from data we ship and control ourselves, same
+	// defensive fallback pattern used elsewhere in this codebase (ragdoll_shared.cpp).
+	IPhysicsObject *pPhysObject = VPhysicsGetObject();
+	if ( pPhysObject )
+	{
+		int nSurfaceData = physprops->GetSurfaceIndex( "grenade_gas" );
+		if ( nSurfaceData < 0 )
+		{
+			nSurfaceData = physprops->GetSurfaceIndex( "default" );
+		}
+		pPhysObject->SetMaterialIndex( nSurfaceData );
+	}
 }
 
 CTFGrenadeGasProjectile::~CTFGrenadeGasProjectile()
