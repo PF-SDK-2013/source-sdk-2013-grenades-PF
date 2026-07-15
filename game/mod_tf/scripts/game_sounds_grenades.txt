@@ -235,3 +235,18 @@
 	"soundlevel"	"SNDLVL_NORM"
 	"wave"			"weapons/grenade_throw.wav"
 }
+// ---------------------------------------------------------------------------
+// BaseSmokeEffect.Sound — used by the Gas Grenade (tf_weapon_grenade_gas.cpp).
+// NOT a stock TF2 sound name (confirmed absent from base game_sounds_weapons.txt),
+// so it belongs here rather than in that file. Do not add this to a copy of
+// game_sounds_weapons.txt -- this mod's scripts/ folder shadows the base game's
+// copy of that file entirely, so shipping any version of it here would silently
+// drop every stock TF2 weapon sound not already present in whatever copy got shipped.
+// ---------------------------------------------------------------------------
+"BaseSmokeEffect.Sound"
+{
+	"channel"		"CHAN_STATIC"
+	"volume"		"1.0"
+	"soundlevel"	"SNDLVL_85dB"
+	"wave"			"weapons/gas_explode.wav"
+}
