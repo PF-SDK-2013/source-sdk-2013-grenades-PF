@@ -5946,6 +5946,18 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 		info.CopyDamageToBaseDamage();
 	}
 
+	// PF2C port: sonic damage (Concussion grenade) never hurts, regardless of who it
+	// hits -- thrower included. Mirrors CTFPlayer::OnTakeDamage in PF2C's own source
+	// (comment there: "concussion blasts don't hurt"), just relocated to this fork's
+	// centralized damage-modify path instead of PF2C's older monolithic OnTakeDamage.
+	// GetDamageForForceCalc()/base damage were already captured just above, so the
+	// knockback force calculated downstream in ApplyPushFromDamage still sees the
+	// original damage value even though the actual health damage is zeroed here.
+	if ( bitsDamage & DMG_SONIC )
+	{
+		info.SetDamage( 0.0f );
+	}
+
 	// Damage type was already crit (Flares / headshot)
 	if ( bitsDamage & DMG_CRITICAL )
 	{

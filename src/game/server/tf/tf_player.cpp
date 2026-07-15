@@ -10448,12 +10448,20 @@ void CTFPlayer::ApplyPushFromDamage( const CTakeDamageInfo &info, Vector vecDir 
 			}
 			else
 			{
-				vecForce = vecDir * -DamageForce( WorldAlignSize(), info.GetDamage(), tf_damageforcescale_other.GetFloat() );
+				// PF2C port: prefer GetDamageForForceCalc() so DMG_SONIC (Concussion
+				// grenade) knockback survives the damage being zeroed in
+				// ApplyOnDamageModifyRules. No-op for every other damage type, since
+				// GetDamageForForceCalc() is always set equal to the original
+				// info.GetDamage() unless something has since zeroed the real damage.
+				float flDamageForForce = info.GetDamageForForceCalc() ? info.GetDamageForForceCalc() : info.GetDamage();
+				vecForce = vecDir * -DamageForce( WorldAlignSize(), flDamageForForce, tf_damageforcescale_other.GetFloat() );
 			}
 
-			if ( IsPlayerClass( TF_CLASS_HEAVYWEAPONS ) )
+			if ( IsPlayerClass( TF_CLASS_HEAVYWEAPONS ) && !(info.GetDamageType() & DMG_SONIC) )
 			{
-				// Heavies take less push from non sentryguns
+				// Heavies take less push from non sentryguns -- but PF2C exempts
+				// DMG_SONIC (Concussion grenade) from this reduction, so Heavies
+				// still get flung same as everyone else.
 				vecForce *= 0.5f;
 			}
 
