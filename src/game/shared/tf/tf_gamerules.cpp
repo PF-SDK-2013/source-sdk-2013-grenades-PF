@@ -5946,18 +5946,6 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 		info.CopyDamageToBaseDamage();
 	}
 
-	// PF2C port: sonic damage (Concussion grenade) never hurts, regardless of who it
-	// hits -- thrower included. Mirrors CTFPlayer::OnTakeDamage in PF2C's own source
-	// (comment there: "concussion blasts don't hurt"), just relocated to this fork's
-	// centralized damage-modify path instead of PF2C's older monolithic OnTakeDamage.
-	// GetDamageForForceCalc()/base damage were already captured just above, so the
-	// knockback force calculated downstream in ApplyPushFromDamage still sees the
-	// original damage value even though the actual health damage is zeroed here.
-	if ( bitsDamage & DMG_SONIC )
-	{
-		info.SetDamage( 0.0f );
-	}
-
 	// Damage type was already crit (Flares / headshot)
 	if ( bitsDamage & DMG_CRITICAL )
 	{
@@ -6878,6 +6866,22 @@ bool CTFGameRules::ApplyOnDamageModifyRules( CTakeDamageInfo &info, CBaseEntity 
 			WRITE_BYTE( pVictim->entindex() );
 			MessageEnd();
 		}
+	}
+
+	// PF2C port: sonic damage (Concussion grenade) never hurts, regardless of who it
+	// hits -- thrower included. Mirrors CTFPlayer::OnTakeDamage in PF2C's own source
+	// (comment there: "concussion blasts don't hurt"), relocated to this fork's
+	// centralized damage-modify path. Must be applied here, immediately before the
+	// commit below, rather than earlier in this function: flDamage is captured from
+	// info.GetDamage() near the top of this function and threaded through resistance/
+	// crit/variance/bonus math as its own local for ~900 lines, so zeroing info's
+	// damage earlier has no effect -- only zeroing flDamage itself, right before this
+	// commit, actually survives. GetBaseDamage()/GetDamageForForceCalc() were already
+	// captured earlier in this function (untouched by this), so knockback force
+	// calculated downstream in ApplyPushFromDamage is unaffected by this zeroing.
+	if ( bitsDamage & DMG_SONIC )
+	{
+		flDamage = 0.0f;
 	}
 
 	info.SetDamage( flDamage );
