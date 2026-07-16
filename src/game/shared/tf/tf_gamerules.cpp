@@ -7446,7 +7446,15 @@ float CTFGameRules::ApplyOnDamageAliveModifyRules( const CTakeDamageInfo &info, 
 
 		if ( sv_cheats && !sv_cheats->GetBool() )
 		{
-			if ( flRealDamage <= 0.0f )
+			// PF2C port: DMG_SONIC (Concussion grenade) is supposed to deal zero
+			// damage by design (see the flDamage zeroing in ApplyOnDamageModifyRules)
+			// while still applying knockback force and TF_COND_DIZZY. This hard-out
+			// is a generic "no damage happened, don't bother with hit effects" gate
+			// that this fork added -- PF2C's older, simpler OnTakeDamage_Alive never
+			// had an equivalent check, so it never had to special-case this. Without
+			// this exemption, a correctly-zeroed concussion hit hard-outs right here
+			// and skips force application and the wobble condition entirely.
+			if ( flRealDamage <= 0.0f && !(info.GetDamageType() & DMG_SONIC) )
 			{
 				// Do a hard out in the caller
 				return -1;
@@ -7455,7 +7463,7 @@ float CTFGameRules::ApplyOnDamageAliveModifyRules( const CTakeDamageInfo &info, 
 		else
 		{
 			// allow negative health values for things like the hurtme command
-			if ( flRealDamage == 0.0f )
+			if ( flRealDamage == 0.0f && !(info.GetDamageType() & DMG_SONIC) )
 			{
 				// Do a hard out in the caller
 				return -1;
