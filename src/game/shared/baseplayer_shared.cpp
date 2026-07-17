@@ -1630,6 +1630,16 @@ void CBasePlayer::CalcPlayerView( Vector& eyeOrigin, QAngle& eyeAngles, float& f
 	// PF2C port: apply Concussion grenade aim-wobble when TF_COND_DIZZY is active.
 	{
 		CTFPlayer *tfPlayer = ToTFPlayer( this );
+#if defined( CLIENT_DLL )
+		// TEMPORARY DIAGNOSTIC -- remove once the wobble issue is confirmed fixed.
+		if ( tfPlayer && tfPlayer->IsLocalPlayer() )
+		{
+			bool bDizzy = tfPlayer->m_Shared.InCond( TF_COND_DIZZY );
+			float flConcTimeCopy = tfPlayer->m_Shared.m_flConcussionTime; // safe local copy, avoids any CNetworkVar/varargs ambiguity
+			Msg( "[PF2C DEBUG-CLIENT] CalcPlayerView: InPrediction=%d InCond(DIZZY)=%d m_flConcussionTime=%.2f\n",
+				prediction->InPrediction() ? 1 : 0, bDizzy ? 1 : 0, flConcTimeCopy );
+		}
+#endif
 		if ( tfPlayer && tfPlayer->m_Shared.InCond( TF_COND_DIZZY ) )
 		{
 			VectorAdd( eyeAngles, ConcAngles(), eyeAngles );
