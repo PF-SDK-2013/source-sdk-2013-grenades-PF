@@ -10762,9 +10762,14 @@ int CTFPlayer::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 	}
 
 	// PF2C port: sonic damage (Concussion grenade) concusses.
+	// TEMPORARY DIAGNOSTIC -- remove once the wobble issue is confirmed fixed.
+	Msg( "[PF2C DEBUG] %s: pre-check info.GetDamageType()=0x%X (DMG_SONIC bit %s)\n",
+		GetPlayerName(), info.GetDamageType(), (info.GetDamageType() & DMG_SONIC) ? "SET" : "NOT SET" );
 	if ( info.GetDamageType() & DMG_SONIC )
 	{
 		m_Shared.Concussion();
+		Msg( "[PF2C DEBUG] %s: Concussion() called. m_flConcussionTime=%.2f InCond(DIZZY)=%d\n",
+			GetPlayerName(), m_Shared.m_flConcussionTime, m_Shared.InCond( TF_COND_DIZZY ) ? 1 : 0 );
 	}
 
 	// Don't recieve reflected damage if you are carrying Reflect (prevents a loop in a game with two Reflect players)
