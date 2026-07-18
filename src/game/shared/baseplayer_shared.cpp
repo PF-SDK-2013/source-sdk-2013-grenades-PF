@@ -56,6 +56,7 @@
 
 // PF2C port: needed for ConcAngles()'s ToTFPlayer() call.
 #if defined( TF_DLL ) || defined( TF_CLIENT_DLL )
+#include "soundstartparams.h"	// PF2C port: c_tf_player.h/c_baseentity.h use StartSoundParams_t without including it themselves
 #include "tf_player_shared.h"
 #ifdef GAME_DLL
 #include "tf_player.h"

@@ -117,7 +117,7 @@ public:
 	void				SmoothViewOnStairs( Vector& eyeOrigin );
 	virtual float		CalcRoll (const QAngle& angles, const Vector& velocity, float rollangle, float rollspeed);
 	void				CalcViewRoll( QAngle& eyeAngles );
-#ifdef TF_DLL
+#if defined( TF_DLL ) || defined( TF_CLIENT_DLL )
 	QAngle				ConcAngles();	// PF2C port
 #endif
 	void				CreateWaterEffects( void );
