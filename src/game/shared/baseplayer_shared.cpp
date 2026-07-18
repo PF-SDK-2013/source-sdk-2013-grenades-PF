@@ -55,7 +55,7 @@
 #include "haptics/haptic_utils.h"
 
 // PF2C port: needed for ConcAngles()'s ToTFPlayer() call.
-#ifdef TF_DLL
+#if defined( TF_DLL ) || defined( TF_CLIENT_DLL )
 #include "tf_player_shared.h"
 #ifdef GAME_DLL
 #include "tf_player.h"
@@ -1626,20 +1626,16 @@ void CBasePlayer::CalcPlayerView( Vector& eyeOrigin, QAngle& eyeAngles, float& f
 
 	CalcViewRoll( eyeAngles );
 
-#ifdef TF_DLL
+#if defined( TF_DLL ) || defined( TF_CLIENT_DLL )
 	// PF2C port: apply Concussion grenade aim-wobble when TF_COND_DIZZY is active.
+	// NOTE: this must check both TF_DLL and TF_CLIENT_DLL, not just TF_DLL -- TF_DLL
+	// is only ever defined for the server project (server_tf.vpc); the client project
+	// (client_tf.vpc) defines TF_CLIENT_DLL instead. Guarding on TF_DLL alone silently
+	// excludes this entire block from client.dll at compile time, which is why the
+	// wobble never rendered even though the server-side condition/duration were both
+	// being set and networked correctly the whole time.
 	{
 		CTFPlayer *tfPlayer = ToTFPlayer( this );
-#if defined( CLIENT_DLL )
-		// TEMPORARY DIAGNOSTIC -- remove once the wobble issue is confirmed fixed.
-		if ( tfPlayer && tfPlayer->IsLocalPlayer() )
-		{
-			bool bDizzy = tfPlayer->m_Shared.InCond( TF_COND_DIZZY );
-			float flConcTimeCopy = tfPlayer->m_Shared.m_flConcussionTime; // safe local copy, avoids any CNetworkVar/varargs ambiguity
-			Msg( "[PF2C DEBUG-CLIENT] CalcPlayerView: InPrediction=%d InCond(DIZZY)=%d m_flConcussionTime=%.2f\n",
-				prediction->InPrediction() ? 1 : 0, bDizzy ? 1 : 0, flConcTimeCopy );
-		}
-#endif
 		if ( tfPlayer && tfPlayer->m_Shared.InCond( TF_COND_DIZZY ) )
 		{
 			VectorAdd( eyeAngles, ConcAngles(), eyeAngles );
@@ -1800,7 +1796,7 @@ void CBasePlayer::CalcViewRoll( QAngle& eyeAngles )
 }
 
 // PF2C port: aim-wobble applied while under the Concussion grenade's TF_COND_DIZZY.
-#ifdef TF_DLL
+#if defined( TF_DLL ) || defined( TF_CLIENT_DLL )
 #define CONC_MULTIPLIER 14
 #define CONC_CLAMP_MAX 4.0f
 QAngle CBasePlayer::ConcAngles()
