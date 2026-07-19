@@ -10765,10 +10765,6 @@ int CTFPlayer::OnTakeDamage_Alive( const CTakeDamageInfo &info )
 	if ( info.GetDamageType() & DMG_SONIC )
 	{
 		m_Shared.Concussion();
-		// TEMPORARY DIAGNOSTIC -- will be removed as soon as this is confirmed.
-		float flConcTimeSafeCopy = m_Shared.m_flConcussionTime;
-		Msg( "[PF2C DEBUG2] %s: post-Concussion() m_flConcussionTime=%.3f (raw bits=0x%08X)\n",
-			GetPlayerName(), flConcTimeSafeCopy, *reinterpret_cast<unsigned int*>(&flConcTimeSafeCopy) );
 	}
 
 	// Don't recieve reflected damage if you are carrying Reflect (prevents a loop in a game with two Reflect players)
