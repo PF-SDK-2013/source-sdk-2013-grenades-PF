@@ -236,6 +236,7 @@ public:
 
 	void CreateSaveMeEffect( MedicCallerType nType = CALLER_TYPE_NORMAL );
 	void StopSaveMeEffect( bool bForceRemoveInstantly = false );
+	void CreateConcussionEffect( void );	// PF2C port
 
 	void CreateTauntWithMeEffect();
 	void StopTauntWithMeEffect();
@@ -610,6 +611,9 @@ private:
 	// Medic callout particle effect
 	CNewParticleEffect	*m_pSaveMeEffect;
 	CNewParticleEffect	*m_pTauntWithMeEffect;
+
+	// Concussion grenade stars particle effect -- PF2C port
+	CNewParticleEffect	*m_pConcStarsEffect;
 
 	bool m_bUpdateObjectHudState;
 	bool	m_bBodygroupsDirty;

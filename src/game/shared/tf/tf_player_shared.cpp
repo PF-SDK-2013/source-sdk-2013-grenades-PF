@@ -344,6 +344,7 @@ BEGIN_RECV_TABLE_NOBASE( CTFPlayerShared, DT_TFPlayerSharedLocal )
 	RecvPropInt( RECVINFO( m_nDesiredDisguiseClass ) ),
 	RecvPropTime( RECVINFO( m_flStealthNoAttackExpire ) ),
 	RecvPropTime( RECVINFO( m_flSmokeBombExpire ) ),	// PF2C port
+	RecvPropFloat( RECVINFO( m_flConcussionTime ) ),	// PF2C port -- was declared CNetworkVar but never actually registered here, so the server's value never reached the client. This is why the wobble computed to zero: ConcAngles() multiplies by this value, and the client's copy was never updated from its zero-initialized default.
 	RecvPropTime( RECVINFO( m_flStealthNextChangeTime ) ),
 	RecvPropBool( RECVINFO( m_bLastDisguisedAsOwnTeam ) ),
 	RecvPropFloat( RECVINFO( m_flRageMeter ) ),
@@ -523,6 +524,7 @@ BEGIN_SEND_TABLE_NOBASE( CTFPlayerShared, DT_TFPlayerSharedLocal )
 	SendPropBool( SENDINFO( m_bLastDisguisedAsOwnTeam ) ),
 	SendPropTime( SENDINFO( m_flStealthNoAttackExpire ) ),
 	SendPropTime( SENDINFO( m_flSmokeBombExpire ) ),	// PF2C port
+	SendPropFloat( SENDINFO( m_flConcussionTime ) ),	// PF2C port -- see matching RecvPropFloat comment above
 	SendPropTime( SENDINFO( m_flStealthNextChangeTime ) ),
 	SendPropFloat( SENDINFO( m_flRageMeter ), 0, SPROP_NOSCALE, 0.0, 100.0 ),
 	SendPropBool( SENDINFO( m_bRageDraining ) ),

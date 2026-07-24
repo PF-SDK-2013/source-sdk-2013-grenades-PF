@@ -3858,6 +3858,7 @@ C_TFPlayer::C_TFPlayer() :
 	m_pDisguisingEffect = NULL;
 	m_pSaveMeEffect = NULL;
 	m_pTauntWithMeEffect = NULL;
+	m_pConcStarsEffect = NULL;	// PF2C port
 	m_hOldObserverTarget = NULL;
 	m_iOldObserverMode = OBS_MODE_NONE;
 	m_pStunnedEffect = NULL;
@@ -4516,6 +4517,12 @@ void C_TFPlayer::OnDataChanged( DataUpdateType_t updateType )
 		if ( m_Shared.InCond( TF_COND_BURNING ) && !m_pBurningSound )
 		{
 			StartBurningSound();
+		}
+
+		// PF2C port: spawn the Concussion grenade's "stars" particle effect.
+		if ( m_Shared.InCond( TF_COND_DIZZY ) && !m_pConcStarsEffect )
+		{
+			CreateConcussionEffect();
 		}
 
 		bool bShouldShowIconForIT = TFGameRules() && TFGameRules()->IsIT( this ) && !IsLocalPlayer();
@@ -6061,6 +6068,22 @@ void C_TFPlayer::ClientThink()
 	{
 		ParticleProp()->StopEmission( m_pRuneChargeReadyEffect );
 		m_pRuneChargeReadyEffect = NULL;
+	}
+
+	// PF2C port: stop the Concussion grenade's "stars" particle effect. Matches
+	// PF2C's exact stop conditions: dead, our own first-person view (the camera
+	// wobble conveys it there instead), an enemy Spy currently disguised+cloaked
+	// (should stay hidden like the rest of them), or the condition simply ending.
+	if ( m_pConcStarsEffect )
+	{
+		if ( !IsAlive() ||
+			( IsLocalPlayer() && InFirstPersonView() ) ||
+			( m_Shared.InCond( TF_COND_DISGUISED ) && IsEnemyPlayer() && ( GetPercentInvisible() > 0 ) ) ||
+			!m_Shared.InCond( TF_COND_DIZZY ) )
+		{
+			ParticleProp()->StopEmission( m_pConcStarsEffect );
+			m_pConcStarsEffect = NULL;
+		}
 	}
 
 	UpdateRuneIcon();
@@ -8178,6 +8201,29 @@ void C_TFPlayer::StopSaveMeEffect( bool bForceRemoveInstantly /*= false*/ )
 		
 		m_pSaveMeEffect = NULL;
 	}
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: PF2C port -- spawns the Concussion grenade's "stars" particle effect,
+//          visible to other players (not the affected player's own first-person
+//          view, which uses ConcAngles()' camera wobble instead).
+//-----------------------------------------------------------------------------
+void C_TFPlayer::CreateConcussionEffect( void )
+{
+	// Don't create them for the local player
+	if ( IsLocalPlayer() && !ShouldDrawLocalPlayer() )
+		return;
+
+	if ( InFirstPersonView() )
+		return;
+
+	if ( m_pConcStarsEffect )
+	{
+		ParticleProp()->StopEmission( m_pConcStarsEffect );
+		m_pConcStarsEffect = NULL;
+	}
+
+	m_pConcStarsEffect = ParticleProp()->Create( "conc_stars", PATTACH_POINT_FOLLOW, "head" );
 }
 
 

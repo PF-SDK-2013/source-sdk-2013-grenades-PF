@@ -4104,6 +4104,27 @@ void CTFPlayer::Regenerate( bool bRefillHealthAndAmmo /*= true*/ )
 			m_Shared.RemoveCond( TF_COND_PLAGUE );
 		}
 
+		// PF2C port: clear conditions from ported grenade types on respawn, matching
+		// PF2C's own Regenerate(). Without this, a player killed while affected by
+		// one of these would respawn still carrying it.
+		if ( m_Shared.InCond( TF_COND_TRANQUILIZED ) )
+		{
+			m_Shared.RemoveCond( TF_COND_TRANQUILIZED );
+		}
+		if ( m_Shared.InCond( TF_COND_LEG_DAMAGED ) )
+		{
+			m_Shared.RemoveCond( TF_COND_LEG_DAMAGED );
+		}
+		if ( m_Shared.InCond( TF_COND_INFECTED ) )
+		{
+			m_Shared.RemoveCond( TF_COND_INFECTED );
+		}
+		if ( m_Shared.InCond( TF_COND_DIZZY ) )
+		{
+			m_Shared.RemoveCond( TF_COND_DIZZY );
+			m_Shared.m_flConcussionTime = 0.0f;
+		}
+
 
 		m_Shared.SetSpyCloakMeter( 100.0f );
 		m_Shared.SetScoutEnergyDrinkMeter( 100.0f );
