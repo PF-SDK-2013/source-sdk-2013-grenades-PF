@@ -1,8 +1,10 @@
 //========= Copyright Valve Corporation, All rights reserved. ============//
 //
 // Purpose: HUD panel showing active grenade-applied conditions
-//          (Infected, Dizzy, Hallucinating, Tranquilized, Slowed).
+//          (Infected, Dizzy, Hallucinating, Slowed).
 //          PF2C port — copied verbatim from pf2c-src.
+//          Tranquilized/"sleepy" slot removed — no ported grenade ever
+//          applies TF_COND_TRANQUILIZED, so the icon was permanently dead.
 //=============================================================================//
 
 #include "cbase.h"
@@ -24,10 +26,9 @@ static const char* s_CondImageNames[] =
 	"ConditionInfectedImage",
 	"ConditionDizzyImage",
 	"ConditionPoisonedImage",
-	"ConditionTranqedImage",
 	"ConditionSlowedImage"
 };
-#define CONDIMAGE_COUNT 5
+#define CONDIMAGE_COUNT 4
 
 class CHudPlayerConditions : public CHudElement, public EditablePanel
 {
@@ -94,8 +95,7 @@ void CHudPlayerConditions::OnThink()
 		m_bCondStates[ 0 ] = pPlayer->m_Shared.InCond( TF_COND_INFECTED );
 		m_bCondStates[ 1 ] = pPlayer->m_Shared.InCond( TF_COND_DIZZY );
 		m_bCondStates[ 2 ] = pPlayer->m_Shared.InCond( TF_COND_HALLUCINATING );
-		m_bCondStates[ 3 ] = pPlayer->m_Shared.InCond( TF_COND_TRANQUILIZED );
-		m_bCondStates[ 4 ] = pPlayer->m_Shared.InCond( TF_COND_LEG_DAMAGED );
+		m_bCondStates[ 3 ] = pPlayer->m_Shared.InCond( TF_COND_LEG_DAMAGED );
 	}
 	m_flNextThink = gpGlobals->curtime + 0.1f;
 }

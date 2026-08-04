@@ -1171,31 +1171,6 @@ void CTFHudDeathNotice::OnGameEvent( IGameEvent *event, int iDeathNoticeMsg )
 			Q_strncpy( msg.szIcon, "d_saw_kill", ARRAYSIZE( msg.szIcon ) );
 		}
 
-		// PF2C port: remap grenade projectile classnames to their short kill icon names
-		// registered in mod_textures.txt (matching PF2C's d_images sprite sheet entries).
-		static const struct { const char *pszLong; const char *pszShort; } s_GrenadeIcons[] =
-		{
-			{ "d_tf_weapon_grenade_normal_projectile",      "d_normal_projectile"   },
-			{ "d_tf_weapon_grenade_napalm_projectile",      "d_napalm_projectile"   },
-			{ "d_tf_weapon_grenade_nail_projectile",        "d_nail_projectile"     },
-			{ "d_tf_projectile_nail",                       "d_nail"                },
-			{ "d_tf_weapon_grenade_caltrop_projectile",     "d_caltrop_projectile"  },
-			{ "d_tf_weapon_grenade_concussion_projectile",  "d_caltrop_projectile"  }, // concussion reuses caltrop icon
-			{ "d_tf_weapon_grenade_emp_projectile",         "d_emp_projectile"      },
-			{ "d_tf_weapon_grenade_mirv_projectile",        "d_mirv_projectile"     },
-			{ "d_tf_weapon_grenade_mirv_bomb",              "d_mirv_bomb"           },
-			{ "d_tf_weapon_grenade_gas_projectile",         "d_gas_projectile"      },
-			{ "d_tf_weapon_grenade_heal_projectile",        "d_heal_projectile"     },
-		};
-		for ( int iGren = 0; iGren < ARRAYSIZE( s_GrenadeIcons ); ++iGren )
-		{
-			if ( FStrEq( msg.szIcon, s_GrenadeIcons[iGren].pszLong ) )
-			{
-				Q_strncpy( msg.szIcon, s_GrenadeIcons[iGren].pszShort, ARRAYSIZE( msg.szIcon ) );
-				break;
-			}
-		}
-
 		int iKillStreakTotal = event->GetInt( "kill_streak_total" );
 		int iKillStreakWep = event->GetInt( "kill_streak_wep" );
 		int iDuckStreakTotal = event->GetInt( "duck_streak_total" );

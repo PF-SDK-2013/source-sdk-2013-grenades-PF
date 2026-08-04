@@ -98,8 +98,12 @@
 	//"wave"		"weapons/emp_explode.wav"
 }
 // ---------------------------------------------------------------------------
-// Bounce sounds — per-type stubs using existing impact wavs.
-// Replace with dedicated wavs once assets are sourced.
+// Bounce sounds — reuse stock grenade_impact wavs with randomization.
+// PF2C's own per-type bounce soundscript names (Nail.Bounce, Caltrop.Bounce,
+// etc.) aren't actually defined anywhere in its shipped assets except
+// Pipebomb.Bounce, which itself just plays grenade_impact.wav — so there's
+// no distinct "real" PF2C sound per type to source here. This is already
+// equal to or better than PF2C's own actual behavior.
 // ---------------------------------------------------------------------------
 "Weapon_Grenade_Caltrop.Bounce"
 {
@@ -230,10 +234,10 @@
 "GrenadePack.Touch"
 {
 	"channel"		"CHAN_ITEM"
-	"volume"		"1.0"
-	"pitch"			"100"
-	"soundlevel"	"SNDLVL_NORM"
-	"wave"			"weapons/grenade_throw.wav"
+	"volume"		"VOL_NORM"
+	"soundlevel"	"SNDLVL_NONE"
+	"pitch"			"PITCH_NORM"
+	"wave"			"items/gunpickup2.wav"
 }
 // ---------------------------------------------------------------------------
 // BaseSmokeEffect.Sound — used by the Gas Grenade (tf_weapon_grenade_gas.cpp).

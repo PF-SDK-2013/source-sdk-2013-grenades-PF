@@ -78,6 +78,8 @@ public:
 private:
 
 	bool			m_bPlayedLeadIn;
+	int				m_iHealAmount;		// PF2C port -- from weaponInfo.m_nHeal, cached at Create() since
+										// GetTFWeaponInfo() isn't safely usable from this GAME_DLL context.
 };
 
 #endif

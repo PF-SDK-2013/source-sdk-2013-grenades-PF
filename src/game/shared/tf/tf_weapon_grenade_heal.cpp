@@ -88,6 +88,7 @@ CTFGrenadeHealProjectile* CTFGrenadeHealProjectile::Create( const Vector &positi
 	if ( pGrenade )
 	{
 		pGrenade->ApplyLocalAngularVelocityImpulse( angVelocity );	
+		pGrenade->m_iHealAmount = weaponInfo.GetWeaponData( TF_WEAPON_PRIMARY_MODE ).m_nHeal;	// PF2C port
 	}
 
 	return pGrenade;
@@ -103,6 +104,7 @@ void CTFGrenadeHealProjectile::Spawn()
 	BaseClass::Spawn();
 
 	m_bPlayedLeadIn = false;
+	m_iHealAmount = 0;		// overwritten by Create() right after construction; defensive default only
 
 	SetThink( &CTFGrenadeHealProjectile::DetonateThink );
 
@@ -159,7 +161,7 @@ void CTFGrenadeHealProjectile::Detonate()
 	
 	CTFPlayer* pThrower = ToTFPlayer(GetThrower());
 	float flRadius = m_DmgRadius;
-	float flHealAmount = m_flDamage;	// weapon script "Damage" field doubles as heal amount
+	float flHealAmount = m_iHealAmount;	// PF2C port -- weapon script "Heal" field, properly parsed
 
 	CTakeDamageInfo info( this, GetThrower(), vec3_origin, GetAbsOrigin(), m_flDamage, DMG_GENERIC | DMG_PREVENT_PHYSICS_FORCE );
 
