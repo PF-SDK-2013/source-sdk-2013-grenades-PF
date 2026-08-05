@@ -129,10 +129,16 @@ bool CHealthKit::MyTouch( CBasePlayer *pPlayer )
 				bSuccess = true;
 			}
 
-			if ( nHealthGiven > 0 || pTFPlayer->m_Shared.InCond( TF_COND_BLEEDING ) || pTFPlayer->m_Shared.InCond( TF_COND_BURNING ) || pTFPlayer->m_Shared.InCond( TF_COND_PLAGUE ) )
+			if ( nHealthGiven > 0 || pTFPlayer->m_Shared.InCond( TF_COND_BLEEDING ) || pTFPlayer->m_Shared.InCond( TF_COND_BURNING ) || pTFPlayer->m_Shared.InCond( TF_COND_PLAGUE ) || pTFPlayer->m_Shared.InCond( TF_COND_INFECTED ) )	// PF2C port
 			{
 				bPerformPickup = true;
 				bSuccess = true;
+
+				// PF2C port -- healthkits also contain penicillin
+				if ( pTFPlayer->m_Shared.InCond( TF_COND_INFECTED ) )
+				{
+					pTFPlayer->m_Shared.RemoveCond( TF_COND_INFECTED );
+				}
 
 				// subtract this from the drowndmg in case they're drowning and being healed at the same time
 				pPlayer->AdjustDrownDmg( -1.0 * flHealth );
