@@ -1165,12 +1165,6 @@ void CTFHudDeathNotice::OnGameEvent( IGameEvent *event, int iDeathNoticeMsg )
 			break;
 		}
 
-		if ( ( event->GetInt( "damagebits" ) & DMG_NERVEGAS )  )
-		{
-			// special case icon for hit-by-vehicle death
-			Q_strncpy( msg.szIcon, "d_saw_kill", ARRAYSIZE( msg.szIcon ) );
-		}
-
 		int iKillStreakTotal = event->GetInt( "kill_streak_total" );
 		int iKillStreakWep = event->GetInt( "kill_streak_wep" );
 		int iDuckStreakTotal = event->GetInt( "duck_streak_total" );
