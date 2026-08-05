@@ -3352,7 +3352,7 @@ void CTFPlayerShared::ConditionThink( void )
 	// PF2C port: Gas grenade infection — deal periodic damage while TF_COND_INFECTED is active.
 	if ( InCond( TF_COND_INFECTED ) )
 	{
-		if ( !m_pOuter->IsAlive() )
+		if ( GetNumHealers() > 0 )
 		{
 			RemoveCond( TF_COND_INFECTED );
 		}
