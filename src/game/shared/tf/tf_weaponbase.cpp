@@ -2695,6 +2695,14 @@ bool CTFWeaponBase::WeaponShouldBeLowered( void )
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------
+bool CTFWeaponBase::IsLowered( void )		// PF2C port
+{
+	return m_bLowered;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: 
+//-----------------------------------------------------------------------------
 bool CTFWeaponBase::Ready( void )
 {
 	// If we don't have the anim, just hide for now

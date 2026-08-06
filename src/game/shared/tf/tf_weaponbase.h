@@ -453,6 +453,7 @@ class CTFWeaponBase : public CBaseCombatWeapon, public IHasOwner, public IHasGen
 
 	// Raising & Lowering for grenade throws
 	bool			WeaponShouldBeLowered( void );
+	bool			IsLowered( void );		// PF2C port
 	virtual bool	Ready( void );
 	virtual bool	Lower( void );
 
