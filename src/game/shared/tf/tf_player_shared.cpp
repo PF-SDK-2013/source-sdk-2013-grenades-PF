@@ -12005,6 +12005,22 @@ void CTFPlayer::SelectItem( const char *pstr, int iSubType /*= 0*/ )
 //-----------------------------------------------------------------------------
 bool CTFPlayer::Weapon_Switch( CBaseCombatWeapon *pWeapon, int viewmodelindex )
 {
+	// PF2C port -- can't switch weapons while primed (main weapon lowered for the throw),
+	// and grenades aren't switched to directly -- they're thrown via the separate
+	// press-throw/slot mechanism, not normal weapon selection.
+	if ( GetActiveTFWeapon() && GetActiveTFWeapon()->IsLowered() )
+	{
+		return false;
+	}
+	if ( pWeapon )
+	{
+		CTFWeaponBase *pTFWeapon = static_cast<CTFWeaponBase*>( pWeapon );
+		if ( pTFWeapon && pTFWeapon->GetTFWpnData().m_bGrenade )
+		{
+			return false;
+		}
+	}
+
 	// Ghosts cant switch weapons!
 	if ( m_Shared.InCond( TF_COND_HALLOWEEN_GHOST_MODE ) )
 	{
