@@ -3453,8 +3453,18 @@ void CBaseObject::RotateBuildAngles( void )
 //-----------------------------------------------------------------------------
 void CBaseObject::UpdateDisabledState( void )
 {
+	// PF2C port: an EMP grenade's timed disable (Disable()/m_flDisableTime) is tracked
+	// independently of m_bHasSapper/m_bPlasmaDisable. Without this check, any unrelated
+	// call to UpdateDisabledState() (a real sapper attaching/detaching elsewhere, a
+	// plasma disable expiring, InputShow/InputEnable, round state changing) would
+	// recompute bShouldBeEnabled with no knowledge of the EMP disable still being
+	// active, and clear it early. BaseObjectThink() already correctly re-enables once
+	// m_flDisableTime has actually passed, so that path is unaffected by this check.
+	const bool bEmpDisableActive = m_bDisabled && !m_bHasSapper && m_flDisableTime > gpGlobals->curtime;
+
 	const bool bShouldBeEnabled = !m_bHasSapper
 							   && !m_bPlasmaDisable
+							   && !bEmpDisableActive
 							   && (!TFGameRules()->RoundHasBeenWon() || TFGameRules()->GetWinningTeam() == GetTeamNumber());
 
 	SetDisabled( !bShouldBeEnabled );
