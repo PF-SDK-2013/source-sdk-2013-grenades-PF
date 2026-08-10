@@ -210,6 +210,14 @@ void CTFGrenadeEmpProjectile::Detonate()
 			{
 				continue;
 			}
+			// PF2C port: Disable() alone never dealt damage to anything -- it just
+			// flips a flag. Without an actual TakeDamage call here, a sapper found in
+			// radius (it's a CBaseObject too, so it's caught by this same pObj branch)
+			// could never take damage or be removed, no matter what CObjectSapper::
+			// OnTakeDamage() allows through. This is what the function's own comment
+			// above ("apply EMP damage to every entity in the radius... they calculate
+			// their own damage") describes but the code never actually did.
+			pObj->TakeDamage( info );
 			pObj->Disable(7.5);
 		}
 	}

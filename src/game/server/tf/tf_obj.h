@@ -469,6 +469,10 @@ protected:
 	// PF2C port: EMP grenade timed disable.
 	float m_flDisableTime;
 	float m_flSparkTime;
+	bool m_bEmpDisableActive;	// PF2C port: true only while an EMP timed-disable is actually
+								// counting down. m_flDisableTime alone can't tell us this --
+								// it's reset to curtime+1e16 (not 0) when inert, which is still
+								// "greater than curtime" and looks identical to an active timer.
 
 private:
 	int			m_iHealthOnPickup;

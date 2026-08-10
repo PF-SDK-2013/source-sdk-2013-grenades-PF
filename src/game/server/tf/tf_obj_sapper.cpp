@@ -561,17 +561,21 @@ void CObjectSapper::SapperThink( void )
 //-----------------------------------------------------------------------------
 int CObjectSapper::OnTakeDamage( const CTakeDamageInfo &info )
 {
-	if ( info.GetDamageCustom() != TF_DMG_WRENCH_FIX )
+	// PF2C port: PF2C lets the sapped building's owner clear a sapper with ANY damage
+	// source (shotgun, pistol, frag grenade, EMP, etc.), not just a wrench hit or a
+	// weapon carrying the stock set_dmg_apply_to_sapper attribute. Gate on ownership
+	// instead of that attribute, matching PF2C's actual CObjectSapper::OnTakeDamage.
+	// NOTE: any-friendly-Engineer-can-clear-a-sapper is real, but it's a *separate*
+	// path (CTFWrench::Smack -> CBaseObject::InputWrenchHit, which deals flat 65
+	// TF_DMG_WRENCH_FIX damage with no ownership/class check at all) that was never
+	// touched here and doesn't need this gate changed to work.
+	CBaseObject *pSappedObject = dynamic_cast<CBaseObject *>( m_hBuiltOnEntity.Get() );
+	CTFPlayer *pAttacker = ToTFPlayer( info.GetAttacker() );
+	bool bIsOwnerDamage = ( pSappedObject && pAttacker && pSappedObject->GetBuilder() == pAttacker );
+
+	if ( info.GetDamageCustom() != TF_DMG_WRENCH_FIX && !bIsOwnerDamage )
 	{
-		// See if the weapon has a "I damage sappers" attribute on it
-		int iDmgSappers = 0;
-		CTFWeaponBase *pWeapon = dynamic_cast<CTFWeaponBase *>(info.GetWeapon());
-		if ( pWeapon )
-		{
-			CALL_ATTRIB_HOOK_INT_ON_OTHER( pWeapon, iDmgSappers, set_dmg_apply_to_sapper );
-		}
-		if ( iDmgSappers == 0 )
-			return 0;
+		return 0;
 	}
 
 	// Is the damage from something other than another sapper? (which might be on our matching teleporter)

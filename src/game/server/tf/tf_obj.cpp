@@ -258,6 +258,7 @@ CBaseObject::CBaseObject()
 	// PF2C port: EMP grenade timed disable.
 	m_flDisableTime = gpGlobals->curtime + 1e16;
 	m_flSparkTime = gpGlobals->curtime + 1e16;
+	m_bEmpDisableActive = false;
 
 	m_bDisposableBuilding = false;
 
@@ -395,6 +396,7 @@ void CBaseObject::Spawn( void )
 	// PF2C port: prevents a stale-sound issue with the EMP disable timer.
 	m_flDisableTime = gpGlobals->curtime + 1e16;
 	m_flSparkTime = gpGlobals->curtime + 1e16;
+	m_bEmpDisableActive = false;
 
 	if ( HasSpawnFlags(SF_BASEOBJ_INVULN) )
 	{
@@ -599,9 +601,10 @@ void CBaseObject::BaseObjectThink( void )
 	}
 
 	// PF2C port: EMP grenade timed disable + spark effect while disabled.
-	if ( m_bDisabled && !m_bHasSapper && m_flDisableTime < gpGlobals->curtime )
+	if ( m_bDisabled && m_bEmpDisableActive && !m_bHasSapper && m_flDisableTime < gpGlobals->curtime )
 	{
 		SetDisabled( false );
+		m_bEmpDisableActive = false;
 		UpdateDisabledState();
 		m_flSparkTime = gpGlobals->curtime + 1e16;
 		m_flDisableTime = gpGlobals->curtime + 1e16;
@@ -3453,18 +3456,15 @@ void CBaseObject::RotateBuildAngles( void )
 //-----------------------------------------------------------------------------
 void CBaseObject::UpdateDisabledState( void )
 {
-	// PF2C port: an EMP grenade's timed disable (Disable()/m_flDisableTime) is tracked
-	// independently of m_bHasSapper/m_bPlasmaDisable. Without this check, any unrelated
-	// call to UpdateDisabledState() (a real sapper attaching/detaching elsewhere, a
-	// plasma disable expiring, InputShow/InputEnable, round state changing) would
-	// recompute bShouldBeEnabled with no knowledge of the EMP disable still being
-	// active, and clear it early. BaseObjectThink() already correctly re-enables once
-	// m_flDisableTime has actually passed, so that path is unaffected by this check.
-	const bool bEmpDisableActive = m_bDisabled && !m_bHasSapper && m_flDisableTime > gpGlobals->curtime;
-
+	// PF2C port: an EMP grenade's timed disable is tracked independently of
+	// m_bHasSapper/m_bPlasmaDisable via m_bEmpDisableActive, so an unrelated call to
+	// UpdateDisabledState() (a real sapper attaching/detaching elsewhere, a plasma
+	// disable expiring, InputShow/InputEnable, round state changing) can't clear it
+	// early. The natural expiry check in BaseObjectThink() clears the flag itself once
+	// the timer genuinely runs out, so this doesn't need its own time comparison.
 	const bool bShouldBeEnabled = !m_bHasSapper
 							   && !m_bPlasmaDisable
-							   && !bEmpDisableActive
+							   && !m_bEmpDisableActive
 							   && (!TFGameRules()->RoundHasBeenWon() || TFGameRules()->GetWinningTeam() == GetTeamNumber());
 
 	SetDisabled( !bShouldBeEnabled );
@@ -3844,6 +3844,7 @@ void CBaseObject::InputDisable( inputdata_t &inputdata )
 void CBaseObject::Disable( float flTime )
 {
 	SetDisabled( true );
+	m_bEmpDisableActive = true;
 	m_flDisableTime = gpGlobals->curtime + flTime;
 	CPVSFilter filter( GetAbsOrigin() );
 	te->Sparks( filter, 0.0, &WorldSpaceCenter(), 3, 1, &vec3_origin );
